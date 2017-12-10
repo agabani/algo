@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -e
+
+ACTIVATE_SCRIPT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/env/bin/activate"
+if [ -f "$ACTIVATE_SCRIPT" ]
+then
+	source $ACTIVATE_SCRIPT
+else
+	echo "$ACTIVATE_SCRIPT not found.  Did you follow documentation to install dependencies?"
+	exit 1
+fi
+
+IP_subject=$1 # eg: vpn.example.com
+
+ROLES="local vpn dns security"
+
+EXTRA_VARS="server_ip=localhost server_user=root IP_subject_alt_name=$IP_subject"
+EXTRA_VARS+=" OnDemandEnabled_Cellular=Y"
+EXTRA_VARS+=" OnDemandEnabled_WIFI=Y"
+EXTRA_VARS+=" Win10_Enabled=Y"
+#EXTRA_VARS+=" Store_CAKEY=Y"
+
+SKIP_TAGS="_null encrypted cloud update-users"
+
+ansible-playbook deploy.yml -t "${ROLES// /,}" -e "${EXTRA_VARS}" --skip-tags "${SKIP_TAGS// /,}"

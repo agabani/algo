@@ -1,4 +1,13 @@
 ---
+
+- name: Get default gateway IP Address
+  shell: >
+    ip route | grep default | awk '{print $3}'
+  register: local_service_ip_output
+
+- set_fact:
+    local_service_ip: "{{ local_service_ip_output.stdout }}"
+
 - block:
     - include: ubuntu.yml
       when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'

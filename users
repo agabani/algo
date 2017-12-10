@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -e
+
+ACTIVATE_SCRIPT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/env/bin/activate"
+if [ -f "$ACTIVATE_SCRIPT" ]
+then
+	source $ACTIVATE_SCRIPT
+else
+	echo "$ACTIVATE_SCRIPT not found.  Did you follow documentation to install dependencies?"
+	exit 1
+fi
+
+IP_subject_alt_name=$1 # eg: vpn.example.com
+easyrsa_CA_password=$2 # eg:(output of $openssl rand -hex 16)
+
+ROLES="vpn update-users"
+
+EXTRA_VARS="server_ip=localhost server_user=root IP_subject_alt_name=$IP_subject_alt_name"
+EXTRA_VARS+=" ssh_tunneling_enabled=N"
+EXTRA_VARS+=" easyrsa_CA_password=$easyrsa_CA_password"
+EXTRA_VARS+=" OnDemandEnabled_Cellular=Y"
+EXTRA_VARS+=" OnDemandEnabled_WIFI=Y"
+EXTRA_VARS+=" Win10_Enabled=Y"
+#EXTRA_VARS+=" Store_CAKEY=Y"
+
+SKIP_TAGS="_null encrypted cloud common"
+
+ansible-playbook users.yml -t "${ROLES// /,}" -e "${EXTRA_VARS}" --skip-tags "${SKIP_TAGS// /,}"
